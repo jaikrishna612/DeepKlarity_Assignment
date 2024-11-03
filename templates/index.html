@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Articles</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .filters {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .filters input, .filters button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .article {
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        .article h3 {
+            margin-top: 0;
+        }
+        .article p {
+            margin: 5px 0;
+        }
+        .message {
+            text-align: center;
+            color: #777;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>News Articles</h1>
+        <div class="filters">
+            <!-- Input for article ID -->
+            <input type="text" id="articleId" placeholder="Enter Article ID">
+
+            <!-- Existing filters for category, date, and keyword -->
+            <input type="text" id="category" placeholder="Category">
+            <input type="date" id="startDate" placeholder="Start Date">
+            <input type="date" id="endDate" placeholder="End Date">
+            <input type="text" id="key" placeholder="Keyword">
+            <button onclick="fetchArticles()">Search</button>
+        </div>
+        <div id="articles"></div>
+        <div class="message" id="message"></div>
+    </div>
+
+    <script>
+        async function fetchArticles() {
+            const articleId = document.getElementById('articleId').value;
+            const category = document.getElementById('category').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const key = document.getElementById('key').value;
+
+            if (articleId) {
+                // If article ID is provided, fetch the article by ID
+                fetchArticleById(articleId);
+                return;
+            }
+
+            // Create a URL object for the endpoint
+            const url = new URL('http://127.0.0.1:5000/getAllArticles');
+
+            // Append query parameters if they have values
+            if (category) url.searchParams.append('category', category);
+            if (startDate) url.searchParams.append('startDate', startDate);
+            if (endDate) url.searchParams.append('endDate', endDate);
+            if (key) url.searchParams.append('key', key);
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const articlesDiv = document.getElementById('articles');
+                const messageDiv = document.getElementById('message');
+
+                articlesDiv.innerHTML = '';
+                messageDiv.textContent = '';
+
+                if (data.status === 200) {
+                    data.data.forEach(article => {
+                        const articleDiv = document.createElement('div');
+                        articleDiv.className = 'article';
+                        articleDiv.innerHTML = `
+                            <h3>${article.title}</h3>
+                            <p>${article.summary}</p>
+                            <p><strong>Category:</strong> ${article.category}</p>
+                            <p><strong>Date:</strong> ${article.publication_date}</p>
+                        `;
+                        articlesDiv.appendChild(articleDiv);
+                    });
+                } else {
+                    messageDiv.textContent = data.message;
+                }
+            } catch (error) {
+                console.error('Error fetching articles:', error);
+            }
+        }
+
+        async function fetchArticleById(id) {
+            const url = `/getArticle?id=${id}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const articlesDiv = document.getElementById('articles');
+                const messageDiv = document.getElementById('message');
+                
+                articlesDiv.innerHTML = '';
+                messageDiv.textContent = '';
+
+                if (data.status === 200) {
+                    const article = data.data;
+                    const articleDiv = document.createElement('div');
+                    articleDiv.className = 'article';
+                    articleDiv.innerHTML = `
+                        <h3>${article.title}</h3>
+                        <p>${article.summary}</p>
+                        <p><strong>Category:</strong> ${article.category}</p>
+                        <p><strong>Date:</strong> ${article.publication_date}</p>
+                    `;
+                    articlesDiv.appendChild(articleDiv);
+                } else {
+                    messageDiv.textContent = data.message;
+                }
+            } catch (error) {
+                console.error('Error fetching article by ID:', error);
+            }
+        }
+    </script>
+</body>
+</html>
