@@ -1,3 +1,4 @@
+![depoloyment_ss](https://github.com/user-attachments/assets/376862d3-bf51-4fde-8eab-2805fc95b19b)
 Overview
 This project is a News Aggregator that scrapes articles from multiple online sources, categorizes them using Natural Language Processing (NLP), and provides access to the aggregated content via a REST API and a simple front-end interface.
 
